@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class PuzzleTile : MonoBehaviour
 {
@@ -12,6 +13,21 @@ public class PuzzleTile : MonoBehaviour
     void Awake()
     {
         sr = GetComponent<SpriteRenderer>();
+    }
+
+    private void Update()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            Vector2 pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            RaycastHit2D hit = Physics2D.Raycast(pos, Vector2.zero);
+
+            if (hit.collider != null)
+            {
+                Debug.Log("“–‚½‚Á‚½: " + hit.collider.name);
+                manager.OnTileClick(x,y);
+            }
+        }
     }
 
     public void SetColor(int id)
@@ -37,9 +53,4 @@ public class PuzzleTile : MonoBehaviour
         return Color.gray;
     }
 
-    void OnMouseDown()
-    {
-        Debug.Log("aaa");
-        manager.OnTileClick(x, y);
-    }
 }
