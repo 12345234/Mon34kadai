@@ -1,56 +1,106 @@
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 public class PuzzleTile : MonoBehaviour
 {
+    private PuzzleManager p_manager;
+
     public int x;
     public int y;
 
-    public PuzzleManager manager;
+    private Vector2 down;
+    private Vector2 up;
+    private Vector2 distance;
 
-    private SpriteRenderer sr;
+    private GameObject neighbortile;
 
-    void Awake()
+    public bool ismatch;
+
+    public Vector2 beffopos;
+
+    private void Start()
     {
-        sr = GetComponent<SpriteRenderer>();
+        p_manager = FindFirstObjectByType<PuzzleManager>();
+
+        x = (int)transform.position.x;
+        y = (int)transform.position.y;
+
+        beffopos = new Vector2(x, y);
     }
 
-    private void Update()
+    private void OnMouseDown()
     {
-        if (Input.GetMouseButtonDown(0))
-        {
-            Vector2 pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            RaycastHit2D hit = Physics2D.Raycast(pos, Vector2.zero);
+        down = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+    }
 
-            if (hit.collider != null)
+    private void OnMouseUp()
+    {
+        up = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        distance = up - down;
+        MoveTiles();
+    }
+
+    void MoveTiles()
+    {
+        if(distance.x>=0&&Mathf.Abs(distance.x)>Mathf.Abs(distance.y))
+        {
+            if(x<4)
             {
-                Debug.Log("“–‚½‚Á‚½: " + hit.collider.name);
-                manager.OnTileClick(x,y);
+                neighbortile = p_manager.tilearray[x + 1, y];
+                neighbortile.GetComponent<PuzzleTile>().x -= 1;
+                x += 1;
+            }
+        }
+
+        if (distance.x < 0 && Mathf.Abs(distance.x)>Mathf.Abs(distance.y))
+        {
+            if(x>0)
+            {
+                neighbortile = p_manager.tilearray[x - 1, y];
+                neighbortile.GetComponent<PuzzleTile>().x += 1;
+                x -= 1;
+            }
+        }
+
+        if (distance.y >= 0 && Mathf.Abs(distance.x) < Mathf.Abs(distance.y))
+        {
+            if(y<6)
+            {
+                neighbortile = p_manager.tilearray[x, y+1];
+
+                neighbortile.GetComponent <PuzzleTile>().y -= 1;
+                y += 1;
+            }
+        }
+
+        if (distance.y < 0 && Mathf.Abs(distance.x) < Mathf.Abs(distance.y))
+        {
+            if (y > 0)
+            {
+                neighbortile = p_manager.tilearray[x, y - 1];
+
+                neighbortile.GetComponent<PuzzleTile>().y += 1;
+                y -= 1;
             }
         }
     }
 
-    public void SetColor(int id)
+    void SetTileToArray()
     {
-        sr.color = GetColor(id);
+        p_manager.tilearray[x, y] = gameObject;
     }
-    
 
-    Color GetColor(int id)
+    private void Update()
     {
-        switch (id)
+        if(transform.position.x!=x||transform.position.y!=y)
         {
-            case 0: return Color.white;
-            case 1: return Color.yellow;
-            case 2: return Color.green;
-            case 3: return Color.cyan;
-            case 4: return new Color(1f, 0.5f, 0f);
-            case 5: return Color.magenta;
-            case 6: return Color.red;
-            case 7: return Color.blue;
-            case 8: return Color.black;
-        }
-        return Color.gray;
-    }
+            transform.position = Vector2.Lerp(transform.position, new Vector2(x, y), 0.3f);
+            Vector2 dif = (Vector2)transform.position - new Vector2(x,y);
 
+            if(Mathf.Abs(dif.magnitude)<0.1f)
+            {
+                transform.position = new Vector2(x, y);
+                SetTileToArray();
+            }
+        }
+    }
 }

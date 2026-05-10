@@ -1,111 +1,34 @@
 using UnityEngine;
 
+[System.Serializable]
 public class PuzzleManager : MonoBehaviour
 {
-    public PuzzleTile[] answerTiles;   
-    public PuzzleTile[] playerTiles;   
+    public GameObject[] tiles;
 
-    private PuzzleTile[,] tiles = new PuzzleTile[3, 3];
+    private int x = 3;
+    private int y = 3;
 
-    int[,] answer =
+    public GameObject[,] tilearray = new GameObject[3, 3];
+
+    private void Start()
     {
-        {0,1,2},
-        {3,4,5},
-        {6,7,8}
-    };
-
-    int[,] player;
-
-    Vector2Int? selected = null;
-
-    void Start()
-    {
-        player = new int[,]
-        {
-            {2,7,6},
-            {5,4,1},
-            {0,8,3}
-        };
-
-        SetupTiles();
-        UpdateAll();
+        CreateTiles();
     }
 
-    void SetupTiles()
+    void CreateTiles()
     {
-        for (int i = 0; i < playerTiles.Length; i++)
+        for (int i = 0;i<x;i++)
         {
-            int x = i % 3;
-            int y = i / 3;
-
-            tiles[y, x] = playerTiles[i];
-            playerTiles[i].x = x;
-            playerTiles[i].y = y;
-            playerTiles[i].manager = this;
-        }
-    }
-
-    public void OnTileClick(int x, int y)
-    {
-        Debug.Log($"クリック {x},{y}");
-        if (selected == null)
-        {
-            selected = new Vector2Int(x, y);
-        }
-        else
-        {
-            Swap(selected.Value, new Vector2Int(x, y));
-            selected = null;
-
-            if (Check())
+            for (int j = 0; j < y; j++)
             {
-                Debug.Log("クリア！");
+                int r=Random.Range(0,5);
+                var tile = Instantiate(tiles[r]);
+
+                tile.transform.position = new Vector2(i, j);
+
+                tilearray[i, j] = tile;
             }
         }
     }
 
-    void Swap(Vector2Int a, Vector2Int b)
-    {
-        int temp = player[a.y, a.x];
-        player[a.y, a.x] = player[b.y, b.x];
-        player[b.y, b.x] = temp;
-
-        UpdatePlayer();
-    }
-
-    bool Check()
-    {
-        for (int y = 0; y < 3; y++)
-        {
-            for (int x = 0; x < 3; x++)
-            {
-                if (answer[y, x] != player[y, x])
-                    return false;
-            }
-        }
-        return true;
-    }
-
-    void UpdateAll()
-    {
-        for (int i = 0; i < answerTiles.Length; i++)
-        {
-            int x = i % 3;
-            int y = i / 3;
-            answerTiles[i].SetColor(answer[y, x]);
-        }
-
-        UpdatePlayer();
-    }
-
-    void UpdatePlayer()
-    {
-        for (int y = 0; y < 3; y++)
-        {
-            for (int x = 0; x < 3; x++)
-            {
-                tiles[y, x].SetColor(player[y, x]);
-            }
-        }
-    }
 }
